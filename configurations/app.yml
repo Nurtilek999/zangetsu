@@ -1,0 +1,9 @@
+App:
+  Port: 8080
+
+Database:
+  Host:
+  Port: 5432
+  Username: postgres
+  Password: admin
+  DBName: postgres
