@@ -73,5 +73,5 @@ func (s *UserService) RegistrationByGmail(userRM *entity.UserRegistrationModel) 
 		return err
 	}
 
-	return fmt.Errorf("check commit")
+	return nil
 }
