@@ -1,0 +1,6 @@
+time="2023-06-29T11:38:20+06:00" level=info msg="connect to postgres" func="main.main()" file="main.go:17"
+time="2023-06-29T12:01:57+06:00" level=error msg="error in ElasticSearch connection" func="main.main()" file="main.go:27"
+time="2023-06-29T12:34:51+06:00" level=info msg="starting to search anime in ElasticSearch" func="zangetsu/internal/domain/handler.(*AnimeHandler).SearchAnime()" file="anime_handler.go:28"
+time="2023-06-29T14:38:03+06:00" level=error msg="json: cannot unmarshal number into Go struct field UserViewModel.password of type string" func="zangetsu/internal/domain/handler.(*UserHandler).SignUp()" file="user_handler.go:75"
+time="2023-06-29T16:34:51+06:00" level=error msg="User already exists" func="zangetsu/internal/domain/service.(*UserService).SignUp()" file="user_service.go:44"
+time="2023-06-29T16:34:51+06:00" level=error msg="User already registered" func="zangetsu/internal/domain/handler.(*UserHandler).SignUp()" file="user_handler.go:82"
