@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"github.com/olivere/elastic/v7"
 	"zangetsu/internal/domain/entity"
+	"zangetsu/pkg/logging"
 )
 
 type AnimeESRepository struct {
 	client *elastic.Client
 	index  string
+	logger logging.Logger
 }
 
 type IAnimeESRepository interface {
@@ -19,16 +21,18 @@ type IAnimeESRepository interface {
 	CreateAnimeIndex() error
 }
 
-func NewElasticsearchAnimeRepository(client *elastic.Client, index string) *AnimeESRepository {
+func NewElasticsearchAnimeRepository(client *elastic.Client, index string, logger logging.Logger) *AnimeESRepository {
 	return &AnimeESRepository{
 		client: client,
 		index:  index,
+		logger: logger,
 	}
 }
 func (r *AnimeESRepository) CreateAnimeIndex() error {
 	// Check if the index already exists
 	exists, err := r.client.IndexExists(r.index).Do(context.Background())
 	if err != nil {
+		r.logger.Errorf(err.Error())
 		return err
 	}
 
@@ -42,53 +46,6 @@ func (r *AnimeESRepository) CreateAnimeIndex() error {
 			return fmt.Errorf("index creation not acknowledged")
 		}
 
-		// Define the mapping for the index
-		//	mapping := `{
-		//    "settings": {
-		//        "analysis": {
-		//            "analyzer": {
-		//                "synonym_analyzer": {
-		//                    "tokenizer": "standard",
-		//                    "filter": [
-		//                        "lowercase",
-		//                        "synonym_filter"
-		//                    ]
-		//                }
-		//            },
-		//            "filter": {
-		//                "synonym_filter": {
-		//                    "type": "synonym",
-		//                    "synonyms": [
-		//                        "хианта, хинаат => хината",   // Replace foo and bar with baz
-		//                        "один, 1",            // Replace one with 1
-		//                        "бабниу, бабник"         // Replace cat with kitty
-		//                    ]
-		//                }
-		//            }
-		//        }
-		//    },
-		//    "mappings": {
-		//        "properties": {
-		//            "titleRus": {
-		//                "type": "text",
-		//                "analyzer": "synonym_analyzer"
-		//            },
-		//            "description": {
-		//                "type": "text",
-		//                "analyzer": "synonym_analyzer"
-		//            },
-		//            "titleEng": {
-		//                "type": "keyword"
-		//            },
-		//            "releaseDate": {
-		//                "type": "date",
-		//                "format": "yyyy-MM-dd"
-		//            }
-		//            // Add more fields and their types as needed
-		//        }
-		//    }
-		//}`
-
 		mapping := `{
         "properties": {
             "titleRus": {
@@ -101,9 +58,11 @@ func (r *AnimeESRepository) CreateAnimeIndex() error {
 		// Put the mapping for the index
 		putMapping, err := r.client.PutMapping().Index(r.index).BodyString(mapping).Do(context.Background())
 		if err != nil {
+			r.logger.Errorf(err.Error())
 			return err
 		}
 		if !putMapping.Acknowledged {
+			r.logger.Info("mapping not acknowledged")
 			return fmt.Errorf("mapping not acknowledged")
 		}
 	}
@@ -122,6 +81,7 @@ func (r *AnimeESRepository) Index(anime *entity.AnimeViewModel) error {
 		Refresh("true").
 		Do(context.Background())
 	if err != nil {
+		r.logger.Errorf(err.Error())
 		return err
 	}
 
@@ -152,7 +112,8 @@ func (r *AnimeESRepository) Search(query string) ([]*entity.AnimeViewModel, erro
 		Do(context.Background())
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to execute search query: %v", err)
+		r.logger.Errorf("failed to execute search query: %v", err)
+		return nil, err
 	}
 
 	// Parse and return the search results
@@ -161,7 +122,8 @@ func (r *AnimeESRepository) Search(query string) ([]*entity.AnimeViewModel, erro
 		var anime entity.AnimeViewModel
 		err := json.Unmarshal(hit.Source, &anime)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse search result: %v", err)
+			r.logger.Errorf("failed to parse search result: %v", err)
+			return nil, err
 		}
 		animeList = append(animeList, &anime)
 	}

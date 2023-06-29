@@ -7,15 +7,16 @@ import (
 	"zangetsu/internal/domain/handler"
 	"zangetsu/internal/domain/repository"
 	"zangetsu/internal/domain/service"
+	"zangetsu/pkg/logging"
 )
 
-func SetupRouter(pgdb *sql.DB, esdb *elastic.Client) *gin.Engine {
+func SetupRouter(pgdb *sql.DB, esdb *elastic.Client, logger logging.Logger) *gin.Engine {
 	router := gin.Default()
 
 	animeRepo := repository.NewAnimeRepository(pgdb)
 	animeEsRepo := repository.NewElasticsearchAnimeRepository(esdb, "anime")
-	animeService := service.NewAnimeService(animeRepo, animeEsRepo)
-	animeHandler := handler.NewAnimeHandler(animeService)
+	animeService := service.NewAnimeService(animeRepo, animeEsRepo, logger)
+	animeHandler := handler.NewAnimeHandler(animeService, logger)
 
 	anime := router.Group("v1/anime")
 	{
@@ -24,8 +25,8 @@ func SetupRouter(pgdb *sql.DB, esdb *elastic.Client) *gin.Engine {
 	}
 
 	userRepo := repository.NewUserRepository(pgdb)
-	userService := service.NewUserService(userRepo)
-	userHandler := handler.NewUserHandler(userService)
+	userService := service.NewUserService(userRepo, logger)
+	userHandler := handler.NewUserHandler(userService, logger)
 
 	user := router.Group("v1/user")
 	{

@@ -3,10 +3,12 @@ package repository
 import (
 	"database/sql"
 	"zangetsu/internal/domain/entity"
+	"zangetsu/pkg/logging"
 )
 
 type AnimeRepository struct {
-	db *sql.DB
+	db     *sql.DB
+	logger logging.Logger
 }
 
 type IAnimeRepository interface {
@@ -18,9 +20,10 @@ type IAnimeRepository interface {
 	DeleteAnime(animeID int) error
 }
 
-func NewAnimeRepository(db *sql.DB) *AnimeRepository {
+func NewAnimeRepository(db *sql.DB, logger logging.Logger) *AnimeRepository {
 	var animeRepo = AnimeRepository{}
 	animeRepo.db = db
+	animeRepo.logger = logger
 	return &animeRepo
 }
 
@@ -31,6 +34,7 @@ func (r *AnimeRepository) BeginTransaction() (*sql.Tx, error) {
 func (r *AnimeRepository) GetLastID() (*sql.Rows, error) {
 	rows, err := r.db.Query(`select max(id) from anime`)
 	if err != nil {
+		r.logger.Errorf(err.Error())
 		return nil, err
 	}
 	return rows, nil
@@ -44,6 +48,7 @@ func (r *AnimeRepository) SaveAnime(anime *entity.AnimeViewModel) *sql.Row {
 func (r *AnimeRepository) SaveAnimeGenres(animeID int, genreID int) error {
 	_, err := r.db.Exec(`insert into anime_genres(anime_id, genre_id) values($1, $2)`, animeID, genreID)
 	if err != nil {
+		r.logger.Errorf(err.Error())
 		return err
 	}
 	return nil
@@ -52,6 +57,7 @@ func (r *AnimeRepository) SaveAnimeGenres(animeID int, genreID int) error {
 func (r *AnimeRepository) DeleteAnime(animeID int) error {
 	_, err := r.db.Exec(`delete from anime where id = $1`, animeID)
 	if err != nil {
+		r.logger.Errorf(err.Error())
 		return err
 	}
 	return nil
@@ -60,6 +66,7 @@ func (r *AnimeRepository) DeleteAnime(animeID int) error {
 func (r *AnimeRepository) DeleteAnimeGenres(animeID int) error {
 	_, err := r.db.Exec(`delete from anime_genres where anime_id = $1`, animeID)
 	if err != nil {
+		r.logger.Errorf(err.Error())
 		return err
 	}
 	return nil

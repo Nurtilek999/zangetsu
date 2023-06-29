@@ -3,14 +3,15 @@ package service
 import (
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
-	"log"
 	"time"
 	"zangetsu/internal/domain/entity"
 	"zangetsu/internal/domain/repository"
+	"zangetsu/pkg/logging"
 )
 
 type UserService struct {
 	userRepo repository.IUserRepository
+	logger   logging.Logger
 }
 
 type IUserService interface {
@@ -19,16 +20,17 @@ type IUserService interface {
 	RegistrationByGmail(user *entity.UserRegistrationModel) error
 }
 
-func NewUserService(userRepo repository.IUserRepository) *UserService {
+func NewUserService(userRepo repository.IUserRepository, logger logging.Logger) *UserService {
 	var userService = UserService{}
 	userService.userRepo = userRepo
+	userService.logger = logger
 	return &userService
 }
 
 func (s *UserService) GetHash(pwd []byte) string {
 	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
 	if err != nil {
-		log.Println(err)
+		s.logger.Errorf(err.Error())
 	}
 	return string(hash)
 }
@@ -38,6 +40,7 @@ func (s *UserService) SignUp(userVM *entity.UserViewModel) error {
 	var user entity.User
 	err := row.Scan(&user.ID, &user.RoleID, &user.FirstName, &user.SecondName, &user.Email, &user.Password, &user.RegisteredDate, &user.GmailBind)
 	if len(user.Email) != 0 || user.Email != "" {
+		s.logger.Errorf("User already exists")
 		return fmt.Errorf("User already registered")
 	}
 
@@ -46,6 +49,7 @@ func (s *UserService) SignUp(userVM *entity.UserViewModel) error {
 
 	err = s.userRepo.SaveUser(userVM, 3, passwordHash, currentDate, false)
 	if err != nil {
+		s.logger.Errorf(err.Error())
 		return err
 	}
 
@@ -70,6 +74,7 @@ func (s *UserService) RegistrationByGmail(userRM *entity.UserRegistrationModel) 
 
 	err = s.userRepo.SaveUser(&userVM, 3, "", currentDate, true)
 	if err != nil {
+		s.logger.Errorf(err.Error())
 		return err
 	}
 
