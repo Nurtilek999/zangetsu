@@ -13,8 +13,8 @@ import (
 func SetupRouter(pgdb *sql.DB, esdb *elastic.Client, logger logging.Logger) *gin.Engine {
 	router := gin.Default()
 
-	animeRepo := repository.NewAnimeRepository(pgdb)
-	animeEsRepo := repository.NewElasticsearchAnimeRepository(esdb, "anime")
+	animeRepo := repository.NewAnimeRepository(pgdb, logger)
+	animeEsRepo := repository.NewElasticsearchAnimeRepository(esdb, "anime", logger)
 	animeService := service.NewAnimeService(animeRepo, animeEsRepo, logger)
 	animeHandler := handler.NewAnimeHandler(animeService, logger)
 
@@ -24,7 +24,7 @@ func SetupRouter(pgdb *sql.DB, esdb *elastic.Client, logger logging.Logger) *gin
 		anime.GET("/search", animeHandler.SearchAnime)
 	}
 
-	userRepo := repository.NewUserRepository(pgdb)
+	userRepo := repository.NewUserRepository(pgdb, logger)
 	userService := service.NewUserService(userRepo, logger)
 	userHandler := handler.NewUserHandler(userService, logger)
 
