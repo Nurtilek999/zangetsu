@@ -15,12 +15,6 @@ type AnimeESRepository struct {
 	logger logging.Logger
 }
 
-type IAnimeESRepository interface {
-	Index(anime *entity.AnimeViewModel) error
-	Search(query string) ([]*entity.AnimeViewModel, error)
-	CreateAnimeIndex() error
-}
-
 func NewElasticsearchAnimeRepository(client *elastic.Client, index string, logger logging.Logger) *AnimeESRepository {
 	return &AnimeESRepository{
 		client: client,

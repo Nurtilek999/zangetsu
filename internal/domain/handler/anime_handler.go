@@ -6,26 +6,26 @@ import (
 	"io/ioutil"
 	"net/http"
 	"zangetsu/internal/domain/entity"
-	"zangetsu/internal/domain/service"
-	"zangetsu/pkg/logging"
 	"zangetsu/pkg/response"
+	"zangetsu/pkg/validation"
 )
 
-type AnimeHandler struct {
-	animeService service.IAnimeService
-	logger       logging.Logger
-}
+//type AnimeHandler struct {
+//	animeService service.IAnimeService
+//	logger       logging.Logger
+//}
 
-func NewAnimeHandler(animeService service.IAnimeService, logger logging.Logger) *AnimeHandler {
-	var animeHandler = AnimeHandler{}
-	animeHandler.animeService = animeService
-	animeHandler.logger = logger
-	return &animeHandler
-}
+//func NewAnimeHandler(animeService service.IAnimeService, logger logging.Logger) *AnimeHandler {
+//	var animeHandler = AnimeHandler{}
+//	animeHandler.animeService = animeService
+//	animeHandler.logger = logger
+//	return &animeHandler
+//}
 
-func (h *AnimeHandler) SearchAnime(c *gin.Context) {
+func (h *Handler) SearchAnime(c *gin.Context) {
 	query := c.Query("query")
-	animes, err := h.animeService.SearchAnime(query)
+	animes, err := h.services.SearchAnime(query)
+	//animes, err := h.animeService.SearchAnime(query)
 	if err != nil {
 		h.logger.Errorf(err.Error())
 		response.ResponseError(c, err.Error(), http.StatusUnprocessableEntity)
@@ -34,7 +34,7 @@ func (h *AnimeHandler) SearchAnime(c *gin.Context) {
 	response.ResponseOKWithData(c, animes)
 }
 
-func (h *AnimeHandler) Save(c *gin.Context) {
+func (h *Handler) Save(c *gin.Context) {
 	var anime entity.AnimeViewModel
 	jsonData, _ := ioutil.ReadAll(c.Request.Body)
 	err := json.Unmarshal(jsonData, &anime)
@@ -45,7 +45,15 @@ func (h *AnimeHandler) Save(c *gin.Context) {
 		return
 	}
 
-	err = h.animeService.SaveAnime(&anime)
+	validationErr := validation.Validate(&anime)
+	if validationErr != nil {
+		h.logger.Errorf("Error in anime struct validation: %s", validationErr.Error())
+		response.ResponseError(c, validationErr.Error(), http.StatusUnprocessableEntity)
+		return
+	}
+
+	err = h.services.SaveAnime(&anime)
+	//err = h.animeService.SaveAnime(&anime)
 	if err != nil {
 		h.logger.Errorf(err.Error())
 		response.ResponseError(c, err.Error(), http.StatusUnprocessableEntity)

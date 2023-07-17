@@ -5,35 +5,32 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
-	"zangetsu/pkg/logging"
-
 	"log"
 	"net/http"
 	"zangetsu/internal/domain/entity"
-	"zangetsu/internal/domain/service"
 	"zangetsu/pkg/config"
 	"zangetsu/pkg/response"
 )
 
-type UserHandler struct {
-	userService service.IUserService
-	logger      logging.Logger
-}
+//type UserHandler struct {
+//	userService service.IUserService
+//	logger      logging.Logger
+//}
 
-func NewUserHandler(userService service.IUserService, logger logging.Logger) *UserHandler {
-	var userHandler = UserHandler{}
-	userHandler.userService = userService
-	userHandler.logger = logger
-	return &userHandler
-}
+//func NewUserHandler(userService service.IUserService, logger logging.Logger) *UserHandler {
+//	var userHandler = UserHandler{}
+//	userHandler.userService = userService
+//	userHandler.logger = logger
+//	return &userHandler
+//}
 
-func (h *UserHandler) LoginGmail(c *gin.Context) {
+func (h *Handler) LoginGmail(c *gin.Context) {
 	googleConfig := config.SetupConfig()
 	url := googleConfig.AuthCodeURL("randomstate") //oauth2.AccessTypeOffline
 	c.Redirect(http.StatusFound, url)
 }
 
-func (h *UserHandler) CallbackGmail(c *gin.Context) {
+func (h *Handler) CallbackGmail(c *gin.Context) {
 	code := c.Query("code")
 
 	googleConfig := config.SetupConfig()
@@ -60,14 +57,15 @@ func (h *UserHandler) CallbackGmail(c *gin.Context) {
 	if err != nil {
 		h.logger.Errorf(err.Error())
 	}
-	err = h.userService.RegistrationByGmail(&user)
+	err = h.services.RegistrationByGmail(&user)
+	//err = h.userService.RegistrationByGmail(&user)
 	if err != nil {
 		h.logger.Errorf(err.Error())
 	}
 	response.ResponseOKWithData(c, userData)
 }
 
-func (h *UserHandler) SignUp(c *gin.Context) {
+func (h *Handler) SignUp(c *gin.Context) {
 	var user entity.UserViewModel
 	err := json.NewDecoder(c.Request.Body).Decode(&user)
 	if err != nil {
@@ -76,7 +74,8 @@ func (h *UserHandler) SignUp(c *gin.Context) {
 		return
 	}
 
-	err = h.userService.SignUp(&user)
+	err = h.services.SignUp(&user)
+	//err = h.userService.SignUp(&user)
 
 	if err != nil {
 		h.logger.Errorf(err.Error())

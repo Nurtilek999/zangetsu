@@ -11,15 +11,6 @@ type AnimeRepository struct {
 	logger logging.Logger
 }
 
-type IAnimeRepository interface {
-	BeginTransaction() (*sql.Tx, error)
-	SaveAnime(anime *entity.AnimeViewModel) *sql.Row
-	GetLastID() (*sql.Rows, error)
-	SaveAnimeGenres(animeID int, genreID int) error
-	DeleteAnimeGenres(animeID int) error
-	DeleteAnime(animeID int) error
-}
-
 func NewAnimeRepository(db *sql.DB, logger logging.Logger) *AnimeRepository {
 	var animeRepo = AnimeRepository{}
 	animeRepo.db = db

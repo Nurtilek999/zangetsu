@@ -9,15 +9,11 @@ import (
 	"zangetsu/pkg/logging"
 )
 
+//go:generate mockgen -source=user_service.go -destination=mocks/mock.go
+
 type UserService struct {
 	userRepo repository.IUserRepository
 	logger   logging.Logger
-}
-
-type IUserService interface {
-	GetHash(pwd []byte) string
-	SignUp(user *entity.UserViewModel) error
-	RegistrationByGmail(user *entity.UserRegistrationModel) error
 }
 
 func NewUserService(userRepo repository.IUserRepository, logger logging.Logger) *UserService {
@@ -27,12 +23,19 @@ func NewUserService(userRepo repository.IUserRepository, logger logging.Logger) 
 	return &userService
 }
 
-func (s *UserService) GetHash(pwd []byte) string {
+//	func (s *UserService) GetHash(pwd []byte) string {
+//		hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+//		if err != nil {
+//			s.logger.Errorf(err.Error())
+//		}
+//		return string(hash)
+//	}
+func GetHash(pwd []byte) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
 	if err != nil {
-		s.logger.Errorf(err.Error())
+		return "", err
 	}
-	return string(hash)
+	return string(hash), nil
 }
 
 func (s *UserService) SignUp(userVM *entity.UserViewModel) error {
@@ -44,7 +47,12 @@ func (s *UserService) SignUp(userVM *entity.UserViewModel) error {
 		return fmt.Errorf("User already registered")
 	}
 
-	passwordHash := s.GetHash([]byte(userVM.Password))
+	//passwordHash := s.GetHash([]byte(userVM.Password))
+	passwordHash, err := GetHash([]byte(userVM.Password))
+	if err != nil {
+		s.logger.Errorf(err.Error())
+		return err
+	}
 	currentDate := time.Now().Format("2006-01-02")
 
 	err = s.userRepo.SaveUser(userVM, 3, passwordHash, currentDate, false)

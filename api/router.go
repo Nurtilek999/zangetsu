@@ -13,26 +13,32 @@ import (
 func SetupRouter(pgdb *sql.DB, esdb *elastic.Client, logger logging.Logger) *gin.Engine {
 	router := gin.Default()
 
-	animeRepo := repository.NewAnimeRepository(pgdb, logger)
-	animeEsRepo := repository.NewElasticsearchAnimeRepository(esdb, "anime", logger)
-	animeService := service.NewAnimeService(animeRepo, animeEsRepo, logger)
-	animeHandler := handler.NewAnimeHandler(animeService, logger)
+	repos := repository.NewRepository(pgdb, esdb, logger, "anime")
+	services := service.NewService(repos, logger)
+	handlers := handler.NewHandler(services, logger)
+
+	//animeRepo := repository.NewAnimeRepository(pgdb, logger)
+	//animeEsRepo := repository.NewElasticsearchAnimeRepository(esdb, "anime", logger)
+	//animeService := service.NewAnimeService(animeRepo, animeEsRepo, logger)
+	//animeHandler := handler.NewAnimeHandler(animeService, logger)
 
 	anime := router.Group("v1/anime")
 	{
-		anime.POST("/save", animeHandler.Save)
-		anime.GET("/search", animeHandler.SearchAnime)
+		//anime.POST("/save", animeHandler.Save)
+		//anime.GET("/search", animeHandler.SearchAnime)
+		anime.POST("/save", handlers.Save)
+		anime.GET("/search", handlers.SearchAnime)
 	}
 
-	userRepo := repository.NewUserRepository(pgdb, logger)
-	userService := service.NewUserService(userRepo, logger)
-	userHandler := handler.NewUserHandler(userService, logger)
+	//userRepo := repository.NewUserRepository(pgdb, logger)
+	//userService := service.NewUserService(userRepo, logger)
+	//userHandler := handler.NewUserHandler(userService, logger)
 
 	user := router.Group("v1/user")
 	{
-		user.GET("loginGmail", userHandler.LoginGmail)
-		user.GET("callback", userHandler.CallbackGmail)
-		user.POST("/signup", userHandler.SignUp)
+		user.GET("loginGmail", handlers.LoginGmail)
+		user.GET("callback", handlers.CallbackGmail)
+		user.POST("/signup", handlers.SignUp)
 	}
 
 	return router

@@ -14,11 +14,6 @@ type AnimeService struct {
 	logger      logging.Logger
 }
 
-type IAnimeService interface {
-	SaveAnime(anime *entity.AnimeViewModel) error
-	SearchAnime(query string) ([]*entity.AnimeViewModel, error)
-}
-
 func NewAnimeService(animeRepo repository.IAnimeRepository, animeEsRepo repository.IAnimeESRepository, logger logging.Logger) *AnimeService {
 	var animeService = AnimeService{}
 	animeService.animeRepo = animeRepo

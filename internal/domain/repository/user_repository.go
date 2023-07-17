@@ -11,11 +11,6 @@ type UserRepository struct {
 	logger logging.Logger
 }
 
-type IUserRepository interface {
-	SaveUser(user *entity.UserViewModel, roleID int, passwordHash string, regDate string, gmailBind bool) error
-	GetUser(email string) *sql.Row
-}
-
 func NewUserRepository(db *sql.DB, logger logging.Logger) *UserRepository {
 	var userRepo UserRepository
 	userRepo.db = db

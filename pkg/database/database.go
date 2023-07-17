@@ -9,9 +9,9 @@ import (
 )
 
 func InitDB() (*sql.DB, error) {
-	username := viper.GetString("Database.Username")
-	password := viper.GetString("Database.Password")
-	dbname := viper.GetString("Database.DBName")
+	username := viper.GetString("Db.Username")
+	password := viper.GetString("Db.Password")
+	dbname := viper.GetString("Db.DBName")
 
 	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", username, password, dbname)
 	DB, err := sql.Open("postgres", connectionString)

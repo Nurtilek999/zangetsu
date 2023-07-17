@@ -4,3 +4,8 @@ time="2023-06-29T12:34:51+06:00" level=info msg="starting to search anime in Ela
 time="2023-06-29T14:38:03+06:00" level=error msg="json: cannot unmarshal number into Go struct field UserViewModel.password of type string" func="zangetsu/internal/domain/handler.(*UserHandler).SignUp()" file="user_handler.go:75"
 time="2023-06-29T16:34:51+06:00" level=error msg="User already exists" func="zangetsu/internal/domain/service.(*UserService).SignUp()" file="user_service.go:44"
 time="2023-06-29T16:34:51+06:00" level=error msg="User already registered" func="zangetsu/internal/domain/handler.(*UserHandler).SignUp()" file="user_handler.go:82"
+time="2023-07-14T13:25:28+06:00" level=error msg="Error in anime struct validation: Key: 'AnimeViewModel.Description' Error:Field validation for 'Description' failed on the 'max' tag" func="zangetsu/internal/domain/handler.(*AnimeHandler).Save()" file="anime_handler.go:51"
+time="2023-07-15T22:28:15+06:00" level=error msg="error in ElasticSearch connection" func="main.main()" file="main.go:27"
+time="2023-07-15T22:32:18+06:00" level=error msg="pq: SSL is not enabled on the server" func="zangetsu/internal/domain/repository.(*UserRepository).SaveUser()" file="user_repository.go:17"
+time="2023-07-15T22:32:18+06:00" level=error msg="pq: SSL is not enabled on the server" func="zangetsu/internal/domain/service.(*UserService).SignUp()" file="user_service.go:66"
+time="2023-07-15T22:32:18+06:00" level=error msg="pq: SSL is not enabled on the server" func="zangetsu/internal/domain/handler.(*UserHandler).SignUp()" file="user_handler.go:82"
